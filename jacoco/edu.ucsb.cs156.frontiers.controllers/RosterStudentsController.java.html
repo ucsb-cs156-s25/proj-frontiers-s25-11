@@ -32,6 +32,7 @@ import edu.ucsb.cs156.frontiers.entities.RosterStudent;
 import edu.ucsb.cs156.frontiers.enums.OrgStatus;
 import edu.ucsb.cs156.frontiers.enums.RosterStatus;
 import edu.ucsb.cs156.frontiers.errors.EntityNotFoundException;
+import edu.ucsb.cs156.frontiers.errors.InvalidRequestException;
 import edu.ucsb.cs156.frontiers.repositories.CourseRepository;
 import edu.ucsb.cs156.frontiers.repositories.RosterStudentRepository;
 import edu.ucsb.cs156.frontiers.dto.RosterStudentUpdateDTO;
@@ -48,16 +49,16 @@ import jakarta.validation.Valid;
 @Tag(name = &quot;RosterStudents&quot;)
 @RequestMapping(&quot;/api/rosterstudents&quot;)
 @RestController
-<span class="fc" id="L51">@Slf4j</span>
-<span class="fc" id="L52">public class RosterStudentsController extends ApiController {</span>
+<span class="fc" id="L52">@Slf4j</span>
+<span class="fc" id="L53">public class RosterStudentsController extends ApiController {</span>
 
     @Autowired
     private JobService jobService;
     @Autowired
     private OrganizationMemberService organizationMemberService;
 
-<span class="fc" id="L59">    public enum InsertStatus {</span>
-<span class="fc" id="L60">        INSERTED, UPDATED</span>
+<span class="fc" id="L60">    public enum InsertStatus {</span>
+<span class="fc" id="L61">        INSERTED, UPDATED</span>
     };
 
     @Autowired
@@ -91,21 +92,21 @@ import jakarta.validation.Valid;
 
         // Get Course or else throw an error
 
-<span class="fc" id="L94">        Course course = courseRepository.findById(courseId)</span>
-<span class="fc" id="L95">                .orElseThrow(() -&gt; new EntityNotFoundException(Course.class, courseId));</span>
+<span class="fc" id="L95">        Course course = courseRepository.findById(courseId)</span>
+<span class="fc" id="L96">                .orElseThrow(() -&gt; new EntityNotFoundException(Course.class, courseId));</span>
 
-<span class="fc" id="L97">        RosterStudent rosterStudent = RosterStudent.builder()</span>
-<span class="fc" id="L98">                .studentId(studentId)</span>
-<span class="fc" id="L99">                .firstName(firstName)</span>
-<span class="fc" id="L100">                .lastName(lastName)</span>
-<span class="fc" id="L101">                .email(email)</span>
-<span class="fc" id="L102">                .course(course)</span>
-<span class="fc" id="L103">                .rosterStatus(RosterStatus.MANUAL)</span>
-<span class="fc" id="L104">                .orgStatus(OrgStatus.NONE)</span>
-<span class="fc" id="L105">                .build();</span>
-<span class="fc" id="L106">        RosterStudent savedRosterStudent = rosterStudentRepository.save(rosterStudent);</span>
+<span class="fc" id="L98">        RosterStudent rosterStudent = RosterStudent.builder()</span>
+<span class="fc" id="L99">                .studentId(studentId)</span>
+<span class="fc" id="L100">                .firstName(firstName)</span>
+<span class="fc" id="L101">                .lastName(lastName)</span>
+<span class="fc" id="L102">                .email(email)</span>
+<span class="fc" id="L103">                .course(course)</span>
+<span class="fc" id="L104">                .rosterStatus(RosterStatus.MANUAL)</span>
+<span class="fc" id="L105">                .orgStatus(OrgStatus.NONE)</span>
+<span class="fc" id="L106">                .build();</span>
+<span class="fc" id="L107">        RosterStudent savedRosterStudent = rosterStudentRepository.save(rosterStudent);</span>
 
-<span class="fc" id="L108">        return savedRosterStudent;</span>
+<span class="fc" id="L109">        return savedRosterStudent;</span>
     }
 
     /**
@@ -118,9 +119,9 @@ import jakarta.validation.Valid;
     @GetMapping(&quot;/course&quot;)
     public Iterable&lt;RosterStudent&gt; rosterStudentForCourse(
             @Parameter(name = &quot;courseId&quot;) @RequestParam Long courseId) throws EntityNotFoundException {
-<span class="fc" id="L121">        courseRepository.findById(courseId).orElseThrow(() -&gt; new EntityNotFoundException(Course.class, courseId));</span>
-<span class="fc" id="L122">        Iterable&lt;RosterStudent&gt; rosterStudents = rosterStudentRepository.findByCourseId(courseId);</span>
-<span class="fc" id="L123">        return rosterStudents;</span>
+<span class="fc" id="L122">        courseRepository.findById(courseId).orElseThrow(() -&gt; new EntityNotFoundException(Course.class, courseId));</span>
+<span class="fc" id="L123">        Iterable&lt;RosterStudent&gt; rosterStudents = rosterStudentRepository.findByCourseId(courseId);</span>
+<span class="fc" id="L124">        return rosterStudents;</span>
     }
 
     /**
@@ -137,21 +138,20 @@ import jakarta.validation.Valid;
             @Parameter(name=&quot;id&quot;) @RequestParam Long id,
             @RequestBody @Valid RosterStudentUpdateDTO incoming) {
 
-<span class="nc" id="L140">        RosterStudent rosterStudent = rosterStudentRepository.findById(id)</span>
-<span class="nc" id="L141">                .orElseThrow(() -&gt; new EntityNotFoundException(RosterStudent.class, id));</span>
+<span class="fc" id="L141">        RosterStudent rosterStudent = rosterStudentRepository.findById(id)</span>
+<span class="fc" id="L142">                .orElseThrow(() -&gt; new EntityNotFoundException(RosterStudent.class, id));</span>
 
-<span class="nc" id="L143">        Optional&lt;RosterStudent&gt; duplicate = rosterStudentRepository.findByStudentId(incoming.getStudentId());</span>
-<span class="nc bnc" id="L144" title="All 4 branches missed.">        if (duplicate.isPresent() &amp;&amp; !duplicate.get().getId().equals(id)) {</span>
-<span class="nc" id="L145">        throw new IllegalArgumentException(&quot;Another student with studentId '&quot; </span>
-<span class="nc" id="L146">            + incoming.getStudentId() + &quot;' already exists.&quot;);</span>
-    }
-<span class="nc" id="L148">        rosterStudent.setFirstName(incoming.getFirstName());</span>
-<span class="nc" id="L149">        rosterStudent.setLastName(incoming.getLastName());</span>
-<span class="nc" id="L150">        rosterStudent.setStudentId(incoming.getStudentId());</span>
+<span class="fc" id="L144">        Optional&lt;RosterStudent&gt; duplicate = rosterStudentRepository.findByStudentId(incoming.getStudentId());</span>
+<span class="fc bfc" id="L145" title="All 4 branches covered.">        if (duplicate.isPresent() &amp;&amp; !duplicate.get().getId().equals(id)) {</span>
+<span class="fc" id="L146">            throw new InvalidRequestException(&quot;studentId &quot; + incoming.getStudentId() + &quot; already exists&quot;);</span>
+        }
+<span class="fc" id="L148">        rosterStudent.setFirstName(incoming.getFirstName());</span>
+<span class="fc" id="L149">        rosterStudent.setLastName(incoming.getLastName());</span>
+<span class="fc" id="L150">        rosterStudent.setStudentId(incoming.getStudentId());</span>
 
-<span class="nc" id="L152">        rosterStudentRepository.save(rosterStudent);</span>
+<span class="fc" id="L152">        rosterStudentRepository.save(rosterStudent);</span>
 
-<span class="nc" id="L154">        return rosterStudent;</span>
+<span class="fc" id="L154">        return rosterStudent;</span>
     }
 
     @Operation(summary = &quot;Upload Roster students for Course in UCSB Egrades Format&quot;)
