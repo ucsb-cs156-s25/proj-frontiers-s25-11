@@ -3,8 +3,7 @@ package edu.ucsb.cs156.frontiers.controllers;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*; 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,7 +20,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import edu.ucsb.cs156.frontiers.entities.Course;
+import edu.ucsb.cs156.frontiers.entities.RosterStudent;
 import edu.ucsb.cs156.frontiers.models.CurrentUser;
+import edu.ucsb.cs156.frontiers.models.RosterStudentDTO;
+import edu.ucsb.cs156.frontiers.entities.User; 
 import edu.ucsb.cs156.frontiers.repositories.CourseRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -152,5 +154,59 @@ public class CoursesController extends ApiController {
         );
     }
 
+    @Operation(summary = "Student can see what courses they appear on roster of and their status in each")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/lookup")
+    public List<Map<String, Object>> lookUpStudentCourseRoster() 
+    {
+        User currentUser = getCurrentUser().getUser();
+        String studentEmail = currentUser.getEmail();
+
+        Iterable<Course> allCourses = courseRepository.findAll();
+        List<Map<String, Object>> matchedCourses = new ArrayList<>();
+
+        for (Course course : allCourses) 
+        {
+            for (RosterStudent rs : course.getRosterStudents()) 
+            {
+                if (rs.getEmail()==studentEmail) 
+                {
+                    Map<String, Object> courseInfo = new HashMap<>();
+                    courseInfo.put("id", course.getId());
+                    courseInfo.put("orgName", course.getOrgName());
+                    courseInfo.put("courseName", course.getCourseName());
+                    courseInfo.put("term", course.getTerm());
+                    courseInfo.put("school", course.getSchool());
+
+                    String installation_id = course.getInstallationId(); 
+                    if(installation_id == null)
+                    {
+                        installation_id = "setup in progress"; 
+                    }
+                    else 
+                    {
+                        installation_id = "joinable"; 
+                    }
+                    courseInfo.put("installationId", installation_id);
+
+                    String status = ""; 
+                    if (rs.getOrgStatus() != null)
+                    {
+                        status = rs.getOrgStatus().name(); 
+                        if (status == "NONE")
+                        {
+                            status = "Not yet requested"; 
+                        }
+                    } 
+                    courseInfo.put("status", status);
+
+                    matchedCourses.add(courseInfo);
+                    break; 
+                }
+            }
+        }
+
+        return matchedCourses;
+    }
 
 }

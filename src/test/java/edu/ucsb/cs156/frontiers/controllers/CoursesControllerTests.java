@@ -1,6 +1,7 @@
 package edu.ucsb.cs156.frontiers.controllers;
 
 import edu.ucsb.cs156.frontiers.errors.InvalidInstallationTypeException;
+import edu.ucsb.cs156.frontiers.models.CurrentUser;
 import edu.ucsb.cs156.frontiers.services.OrganizationLinkerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,14 +11,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 
 import edu.ucsb.cs156.frontiers.ControllerTestCase;
 import edu.ucsb.cs156.frontiers.entities.Course;
+import edu.ucsb.cs156.frontiers.entities.RosterStudent;
 import edu.ucsb.cs156.frontiers.entities.User;
+import edu.ucsb.cs156.frontiers.enums.OrgStatus;
+import edu.ucsb.cs156.frontiers.enums.RosterStatus;
 import edu.ucsb.cs156.frontiers.repositories.CourseRepository;
 import edu.ucsb.cs156.frontiers.services.CurrentUserService;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -198,7 +204,8 @@ public class CoursesControllerTests extends ControllerTestCase {
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
-    public void testNotCreator() throws Exception {
+    public void testNotCreator() throws Exception 
+    {
         User separateUser = User.builder().id(2L).build();
         Course course1 = Course.builder()
                 .courseName("CS156")
@@ -240,32 +247,49 @@ public class CoursesControllerTests extends ControllerTestCase {
     }
 
     @Test
-    @WithMockUser(roles = {"ADMIN"})
-    public void testNotOrganization() throws Exception {
-        User user = currentUserService.getCurrentUser().getUser();
-        Course course1 = Course.builder()
-                .courseName("CS156")
-                .term("S25")
-                .school("UCSB")
-                .creator(user)
+    @WithMockUser(roles = { "USER" })
+    public void testLookUpStudentCourseRoster() throws Exception {
+        User user = User.builder().id(1L).build();
+
+        Course course = Course.builder()
                 .id(1L)
+                .courseName("CS156")
+                .orgName("ucsb-cs156")
+                .installationId("NONE")
+                .term("F23")
+                .school("Engineering")
                 .build();
 
-        doThrow(new InvalidInstallationTypeException("User")).when(linkerService).getOrgName(eq("1234"));
-        doReturn(Optional.of(course1)).when(courseRepository).findById(eq(1L));
-        MvcResult response = mockMvc.perform(get("/api/courses/link")
-                        .param("installation_id", "1234")
-                        .param("setup_action", "install")
-                        .param("code", "abcdefg")
-                        .param("state", "1"))
-                .andExpect(status().isBadRequest())
+        RosterStudent rs1 = RosterStudent.builder()
+                        .firstName("Chris")
+                        .lastName("Gaucho")
+                        .studentId("A123456")
+                        .email("cgaucho@example.org")
+                        .course(course)
+                        .rosterStatus(RosterStatus.MANUAL)
+                        .orgStatus(OrgStatus.NONE)
+                        .build();
+
+        course.setRosterStudents(List.of(rs1));
+
+        when(courseRepository.findAll()).thenReturn(List.of(course));
+        when(currentUserService.getCurrentUser()).thenReturn(CurrentUser.builder().user(user).build());
+
+        MvcResult response = mockMvc.perform(get("/api/courses/lookup"))
+                .andExpect(status().isOk())
                 .andReturn();
 
         String responseString = response.getResponse().getContentAsString();
-        Map<String, String> expectedMap = Map.of(
-                "type", "InvalidInstallationTypeException",
-                "message", "Invalid installation type: User. Frontiers can only be linked to organizations");
+        Map<String, Object> expectedMap = Map.of
+        (
+                        "id", 1L,
+                        "orgName", "ucsb-cs156", 
+                        "courseName", "CS156", 
+                        "term", "F23", 
+                        "school", "Engineering",
+                        "status", "Not yet requested");
         String expectedJson = mapper.writeValueAsString(expectedMap);
         assertEquals(expectedJson, responseString);
     }
+
 }
