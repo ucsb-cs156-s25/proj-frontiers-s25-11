@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 <span class="fc" id="L28">@Slf4j</span>
 
 <span class="fc" id="L30">public class AdminsController extends ApiController{</span>
-
     @Autowired
     AdminRepository adminRepository;
 
@@ -45,11 +44,11 @@ import lombok.extern.slf4j.Slf4j;
         )
         {
 
-<span class="fc" id="L48">        Admin admin = new Admin(email);</span>
+<span class="fc" id="L47">        Admin admin = new Admin(email);</span>
 
-<span class="fc" id="L50">        Admin savedAdmin = adminRepository.save(admin);</span>
+<span class="fc" id="L49">        Admin savedAdmin = adminRepository.save(admin);</span>
 
-<span class="fc" id="L52">        return savedAdmin;</span>
+<span class="fc" id="L51">        return savedAdmin;</span>
     }
 
     /**
@@ -60,8 +59,8 @@ import lombok.extern.slf4j.Slf4j;
     @PreAuthorize(&quot;hasRole('ROLE_ADMIN')&quot;)
     @GetMapping(&quot;/all&quot;)
     public Iterable&lt;Admin&gt; allAdmins() {
-<span class="fc" id="L63">        Iterable&lt;Admin&gt; admins = adminRepository.findAll();</span>
-<span class="fc" id="L64">        return admins;</span>
+<span class="fc" id="L62">        Iterable&lt;Admin&gt; admins = adminRepository.findAll();</span>
+<span class="fc" id="L63">        return admins;</span>
     }
 
     /**
@@ -74,11 +73,11 @@ import lombok.extern.slf4j.Slf4j;
     @DeleteMapping(&quot;&quot;)
     public Object deleteAdmin(
             @Parameter(name=&quot;email&quot;) @RequestParam String email) {
-<span class="fc" id="L77">        Admin admin = adminRepository.findById(email)</span>
-<span class="fc" id="L78">                .orElseThrow(() -&gt; new EntityNotFoundException(Admin.class, email));</span>
+<span class="fc" id="L76">        Admin admin = adminRepository.findById(email)</span>
+<span class="fc" id="L77">                .orElseThrow(() -&gt; new EntityNotFoundException(Admin.class, email));</span>
 
-<span class="fc" id="L80">        adminRepository.delete(admin);</span>
-<span class="fc" id="L81">        return genericMessage(&quot;Admin with id %s deleted&quot;.formatted(email));</span>
+<span class="fc" id="L79">        adminRepository.delete(admin);</span>
+<span class="fc" id="L80">        return genericMessage(&quot;Admin with id %s deleted&quot;.formatted(email));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
