@@ -2,8 +2,6 @@
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import edu.ucsb.cs156.frontiers.entities.Course;
-import edu.ucsb.cs156.frontiers.entities.RosterStudent;
 import edu.ucsb.cs156.frontiers.errors.EntityNotFoundException;
 import edu.ucsb.cs156.frontiers.errors.InvalidInstallationTypeException;
 import edu.ucsb.cs156.frontiers.models.CurrentUser;
@@ -34,13 +31,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*; 
-
 @Tag(name = &quot;Course&quot;)
 @RequestMapping(&quot;/api/courses&quot;)
 @RestController
-<span class="fc" id="L42">@Slf4j</span>
-<span class="fc" id="L43">public class CoursesController extends ApiController {</span>
+<span class="fc" id="L37">@Slf4j</span>
+<span class="fc" id="L38">public class CoursesController extends ApiController {</span>
     
     @Autowired
     private CourseRepository courseRepository;
@@ -68,17 +63,17 @@ import java.util.*;
            )
             {
         //get current date right now and set status to pending
-<span class="fc" id="L71">        CurrentUser currentUser = getCurrentUser();</span>
-<span class="fc" id="L72">        Course course = Course.builder()</span>
-<span class="fc" id="L73">                .orgName(orgName)</span>
-<span class="fc" id="L74">                .courseName(courseName)</span>
-<span class="fc" id="L75">                .term(term)</span>
-<span class="fc" id="L76">                .school(school)</span>
-<span class="fc" id="L77">                .creator(currentUser.getUser())</span>
-<span class="fc" id="L78">                .build();</span>
-<span class="fc" id="L79">        Course savedCourse = courseRepository.save(course);</span>
+<span class="fc" id="L66">        CurrentUser currentUser = getCurrentUser();</span>
+<span class="fc" id="L67">        Course course = Course.builder()</span>
+<span class="fc" id="L68">                .orgName(orgName)</span>
+<span class="fc" id="L69">                .courseName(courseName)</span>
+<span class="fc" id="L70">                .term(term)</span>
+<span class="fc" id="L71">                .school(school)</span>
+<span class="fc" id="L72">                .creator(currentUser.getUser())</span>
+<span class="fc" id="L73">                .build();</span>
+<span class="fc" id="L74">        Course savedCourse = courseRepository.save(course);</span>
 
-<span class="fc" id="L81">        return savedCourse;</span>
+<span class="fc" id="L76">        return savedCourse;</span>
     }
 
       /**
@@ -90,8 +85,8 @@ import java.util.*;
     @GetMapping(&quot;/all&quot;)
     public Iterable&lt;Course&gt; allCourses(
     ) {
-<span class="fc" id="L93">        Iterable&lt;Course&gt; courses = courseRepository.findAll();</span>
-<span class="fc" id="L94">        return courses;</span>
+<span class="fc" id="L88">        Iterable&lt;Course&gt; courses = courseRepository.findAll();</span>
+<span class="fc" id="L89">        return courses;</span>
     }
 
 
@@ -107,10 +102,10 @@ import java.util.*;
     @PreAuthorize(&quot;hasRole('ROLE_PROFESSOR')&quot;)
     @GetMapping(&quot;/redirect&quot;)
     public ResponseEntity&lt;Void&gt; linkCourse(@Parameter Long courseId) throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException {
-<span class="fc" id="L110">        String newUrl = linkerService.getRedirectUrl();</span>
-<span class="fc" id="L111">        newUrl += &quot;/installations/new?state=&quot;+courseId;</span>
+<span class="fc" id="L105">        String newUrl = linkerService.getRedirectUrl();</span>
+<span class="fc" id="L106">        newUrl += &quot;/installations/new?state=&quot;+courseId;</span>
         //found this convenient solution here: https://stackoverflow.com/questions/29085295/spring-mvc-restcontroller-and-redirect
-<span class="fc" id="L113">        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, newUrl).build();</span>
+<span class="fc" id="L108">        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, newUrl).build();</span>
     }
 
 
@@ -129,18 +124,18 @@ import java.util.*;
                                                 @Parameter(name = &quot;setupAction&quot;) @RequestParam String setup_action,
                                                 @Parameter(name = &quot;code&quot;) @RequestParam String code,
                                                 @Parameter(name = &quot;state&quot;) @RequestParam Long state) throws NoSuchAlgorithmException, InvalidKeySpecException, JsonProcessingException {
-<span class="fc bfc" id="L132" title="All 2 branches covered.">        if(installation_id.isEmpty()) {</span>
-<span class="fc" id="L133">            return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, &quot;/courses/nopermissions&quot;).build();</span>
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        if(installation_id.isEmpty()) {</span>
+<span class="fc" id="L128">            return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, &quot;/courses/nopermissions&quot;).build();</span>
         }else {
-<span class="fc" id="L135">            Course course = courseRepository.findById(state).orElseThrow(() -&gt; new EntityNotFoundException(Course.class, state));</span>
-<span class="fc bfc" id="L136" title="All 2 branches covered.">            if(!(course.getCreator().getId() ==getCurrentUser().getUser().getId())) {</span>
-<span class="fc" id="L137">                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();</span>
+<span class="fc" id="L130">            Course course = courseRepository.findById(state).orElseThrow(() -&gt; new EntityNotFoundException(Course.class, state));</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">            if(!(course.getCreator().getId() ==getCurrentUser().getUser().getId())) {</span>
+<span class="fc" id="L132">                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();</span>
             }else{
-<span class="fc" id="L139">                String orgName = linkerService.getOrgName(installation_id.get());</span>
-<span class="fc" id="L140">                course.setInstallationId(installation_id.get());</span>
-<span class="fc" id="L141">                course.setOrgName(orgName);</span>
-<span class="fc" id="L142">                courseRepository.save(course);</span>
-<span class="fc" id="L143">                return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, &quot;/admin/courses?success=True&amp;course=&quot; + state).build();</span>
+<span class="fc" id="L134">                String orgName = linkerService.getOrgName(installation_id.get());</span>
+<span class="fc" id="L135">                course.setInstallationId(installation_id.get());</span>
+<span class="fc" id="L136">                course.setOrgName(orgName);</span>
+<span class="fc" id="L137">                courseRepository.save(course);</span>
+<span class="fc" id="L138">                return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, &quot;/admin/courses?success=True&amp;course=&quot; + state).build();</span>
             }
         }
     }
@@ -153,121 +148,12 @@ import java.util.*;
     @ExceptionHandler({ InvalidInstallationTypeException.class })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Object handleInvalidInstallationType(Throwable e) {
-<span class="fc" id="L156">        return Map.of(</span>
-<span class="fc" id="L157">                &quot;type&quot;, e.getClass().getSimpleName(),</span>
-<span class="fc" id="L158">                &quot;message&quot;, e.getMessage()</span>
+<span class="fc" id="L151">        return Map.of(</span>
+<span class="fc" id="L152">                &quot;type&quot;, e.getClass().getSimpleName(),</span>
+<span class="fc" id="L153">                &quot;message&quot;, e.getMessage()</span>
         );
     }
 
-    @Operation(summary = &quot;Student can see what courses they appear on roster of and their status in each&quot;)
-    @PreAuthorize(&quot;hasRole('ROLE_USER')&quot;)
-    @GetMapping(&quot;/lookup&quot;)
-    public List&lt;Map&lt;String, Object&gt;&gt; lookUpStudentCourseRoster() 
-    {
-<span class="fc" id="L167">        CurrentUser currentUser = getCurrentUser();</span>
-<span class="fc" id="L168">        String studentEmail = currentUser.getUser().getEmail();</span>
-
-<span class="fc" id="L170">        Iterable&lt;Course&gt; allCourses = courseRepository.findAll();</span>
-<span class="fc" id="L171">        List&lt;Map&lt;String, Object&gt;&gt; matchedCourses = new ArrayList&lt;&gt;();</span>
-
-<span class="fc bfc" id="L173" title="All 2 branches covered.">        for (Course course : allCourses) </span>
-        {
-<span class="pc bpc" id="L175" title="1 of 2 branches missed.">            for (RosterStudent rs : course.getRosterStudents()) </span>
-            {
-<span class="pc bpc" id="L177" title="1 of 2 branches missed.">                if (rs.getEmail().equals(studentEmail)) </span>
-                {
-<span class="fc" id="L179">                    Map&lt;String, Object&gt; courseInfo = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L180">                    courseInfo.put(&quot;id&quot;, course.getId());</span>
-<span class="fc" id="L181">                    courseInfo.put(&quot;orgName&quot;, course.getOrgName());</span>
-<span class="fc" id="L182">                    courseInfo.put(&quot;courseName&quot;, course.getCourseName());</span>
-<span class="fc" id="L183">                    courseInfo.put(&quot;term&quot;, course.getTerm());</span>
-<span class="fc" id="L184">                    courseInfo.put(&quot;school&quot;, course.getSchool());</span>
-
-                    // String installation_id = course.getInstallationId(); 
-                    // if(installation_id == null)
-                    // {
-                    //     installation_id = &quot;setup in progress&quot;; 
-                    // }
-                    // else 
-                    // {
-                    //     installation_id = &quot;joinable&quot;; 
-                    // }
-<span class="fc" id="L195">                    courseInfo.put(&quot;installationId&quot;, course.getInstallationId());</span>
-
-                    // String status = &quot;&quot;; 
-                    // if (rs.getOrgStatus() != null)
-                    // {
-                    //     status = rs.getOrgStatus().name(); 
-                    //     if (status.equals(&quot;NONE&quot;))
-                    //     {
-                    //         status = &quot;Not yet requested&quot;; 
-                    //     }
-                    // } 
-<span class="fc" id="L206">                    courseInfo.put(&quot;status&quot;, rs.getOrgStatus().name()); </span>
-
-<span class="fc" id="L208">                    matchedCourses.add(courseInfo);</span>
-<span class="fc" id="L209">                    break; </span>
-                }
-<span class="nc" id="L211">            }</span>
-<span class="fc" id="L212">        }</span>
-
-<span class="fc" id="L214">        return matchedCourses;</span>
-    }
-
-    // @Operation(summary = &quot;Student can see what courses they appear on roster of and their status in each&quot;)
-    // @PreAuthorize(&quot;hasRole('ROLE_USER')&quot;)
-    // @GetMapping(&quot;/lookup&quot;)
-    // public List&lt;Map&lt;String, Object&gt;&gt; lookUpStaffCourseRoster() 
-    // {
-    //     CurrentUser currentUser = getCurrentUser();
-    //     String studentEmail = currentUser.getUser().getEmail();
-
-    //     Iterable&lt;Course&gt; allCourses = courseRepository.findAll();
-    //     List&lt;Map&lt;String, Object&gt;&gt; matchedCourses = new ArrayList&lt;&gt;();
-
-    //     for (Course course : allCourses) 
-    //     {
-    //         for (RosterStudent rs : course.getRosterStudents()) 
-    //         {
-    //             if (rs.getEmail().equals(studentEmail)) 
-    //             {
-    //                 Map&lt;String, Object&gt; courseInfo = new HashMap&lt;&gt;();
-    //                 courseInfo.put(&quot;id&quot;, course.getId());
-    //                 courseInfo.put(&quot;orgName&quot;, course.getOrgName());
-    //                 courseInfo.put(&quot;courseName&quot;, course.getCourseName());
-    //                 courseInfo.put(&quot;term&quot;, course.getTerm());
-    //                 courseInfo.put(&quot;school&quot;, course.getSchool());
-
-    //                 String installation_id = course.getInstallationId(); 
-    //                 if(installation_id == null)
-    //                 {
-    //                     installation_id = &quot;setup in progress&quot;; 
-    //                 }
-    //                 else 
-    //                 {
-    //                     installation_id = &quot;joinable&quot;; 
-    //                 }
-    //                 courseInfo.put(&quot;installationId&quot;, installation_id);
-
-    //                 String status = &quot;&quot;; 
-    //                 if (rs.getOrgStatus() != null)
-    //                 {
-    //                     status = rs.getOrgStatus().name(); 
-    //                     if (status.equals(&quot;NONE&quot;))
-    //                     {
-    //                         status = &quot;Not yet requested&quot;; 
-    //                     }
-    //                 } 
-    //                 courseInfo.put(&quot;status&quot;, status); 
-
-    //                 matchedCourses.add(courseInfo);
-    //                 break; 
-    //             }
-    //         }
-    //     }
-
-    //     return matchedCourses;
-    // }
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
