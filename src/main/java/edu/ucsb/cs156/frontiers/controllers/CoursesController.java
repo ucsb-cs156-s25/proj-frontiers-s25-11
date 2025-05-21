@@ -26,6 +26,7 @@ import edu.ucsb.cs156.frontiers.errors.EntityNotFoundException;
 import edu.ucsb.cs156.frontiers.errors.InvalidInstallationTypeException;
 import edu.ucsb.cs156.frontiers.models.CurrentUser;
 import edu.ucsb.cs156.frontiers.repositories.CourseRepository;
+import edu.ucsb.cs156.frontiers.repositories.CourseStaffRepository;
 import edu.ucsb.cs156.frontiers.repositories.RosterStudentRepository;
 import edu.ucsb.cs156.frontiers.services.OrganizationLinkerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,6 +45,10 @@ public class CoursesController extends ApiController {
 
     @Autowired
     private RosterStudentRepository rosterStudentRepository;
+
+    @Autowired
+    private CourseStaffRepository courseStaffRepository;
+
 
 
     @Autowired private OrganizationLinkerService linkerService;
@@ -167,15 +172,13 @@ public class CoursesController extends ApiController {
     {
         CurrentUser currentUser = getCurrentUser();
         String email = currentUser.getUser().getEmail(); 
-        List<CourseStaff> staffRoster = currentUser.getUser().getRoles();
+        List<CourseStaff> staffRoster = courseStaffRepository.findAllByEmail(email); 
 
         List<Map<String, Object>> matchedCourses = new ArrayList<>();
 
         for (CourseStaff st : staffRoster) 
         {
             Course course = st.getCourse(); 
-            Optional <RosterStudent> studentRoster = rosterStudentRepository.findByCourseIdAndStudentId(course.getId(), currentUser.getUser().getStudentId()); 
-            RosterStudent rs = studentRoster.get(); 
             
             Map<String, Object> courseInfo = new HashMap<>();
             courseInfo.put("id", course.getId());
@@ -184,7 +187,7 @@ public class CoursesController extends ApiController {
             courseInfo.put("term", course.getTerm());
             courseInfo.put("school", course.getSchool());
             courseInfo.put("installationId", course.getInstallationId());
-            courseInfo.put("status", rs.getOrgStatus()); 
+            courseInfo.put("status", st.getOrgStatus()); 
 
             matchedCourses.add(courseInfo);
         }

@@ -309,7 +309,7 @@ public class CoursesControllerTests extends ControllerTestCase {
     }
 
     @Test
-    @WithMockUser(roles = { "USER" })
+    @WithMockUser(roles = { "ADMIN" })
     public void testLookUpStaffCourseRoster() throws Exception {
 
         User user = User.builder()
@@ -339,8 +339,9 @@ public class CoursesControllerTests extends ControllerTestCase {
                 .build();
 
         CourseStaff sr1 = CourseStaff.builder()
-                .user(user)
+                .email("cgaucho@example.org")
                 .course(course)
+                .orgStatus(OrgStatus.NONE)
                 .build();
 
         RosterStudent rs = RosterStudent.builder()
@@ -354,7 +355,7 @@ public class CoursesControllerTests extends ControllerTestCase {
         user.setRoles(List.of(sr1)); 
         when(currentUserService.getCurrentUser()).thenReturn(cUser); 
         when(courseRepository.findAll()).thenReturn(List.of(course, course2));
-        when(courseStaffRepository.findAll()).thenReturn(List.of(sr1));
+        when(courseStaffRepository.findAllByEmail("cgaucho@example.org")).thenReturn(List.of(sr1));
         when(rosterStudentRepository.findByCourseIdAndStudentId(1L, "ABCD")).thenReturn(Optional.of(rs));
 
         MvcResult response = mockMvc.perform(get("/api/courses/staff"))
