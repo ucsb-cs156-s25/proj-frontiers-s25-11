@@ -197,7 +197,7 @@ import java.util.*;
 <span class="fc" id="L197">        return matchedCourses;</span>
     }
 
-    @Operation(summary = &quot;student can see what courses they appear on staff roster of and their status in each&quot;)
+    @Operation(summary = &quot;Student can see what courses they appear on staff roster of and their status in each&quot;)
     @PreAuthorize(&quot;hasRole('ROLE_USER')&quot;)
     @GetMapping(&quot;/staff&quot;)
     public List&lt;Map&lt;String, Object&gt;&gt; lookUpStaffCourseRoster() 
