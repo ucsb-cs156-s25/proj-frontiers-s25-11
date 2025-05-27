@@ -57,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
      * @return the created course staff roster
      */
 
-    @Operation(summary = &quot;Create a new course staff roster&quot;)
+    @Operation(summary = &quot;Create a new course staff member&quot;)
     @PreAuthorize(&quot;hasRole('ROLE_ADMIN')&quot;)
     @PostMapping(&quot;/post&quot;)
     public CourseStaff postStaffRoster(
